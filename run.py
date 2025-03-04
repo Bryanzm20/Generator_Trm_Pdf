@@ -157,7 +157,7 @@ def main(): #Encapsulamiento del código principal dentro de la función main.
     st.title('Base de Datos con Filtrado')
 
     # Agregar una casilla de selección para el encargado de pesaje
-    encargados = ['Juan Pérez', 'Ana Gómez']
+    encargados = ['Jorge Eduardo Cardona Londoño', 'Cesar Camilo Gonzalez','Melissa Rico Rincon']
     encargado_seleccionado = st.selectbox('Encargado Pesaje FM', encargados)
 
     # Filtrado por fecha
@@ -173,57 +173,102 @@ def main(): #Encapsulamiento del código principal dentro de la función main.
     lugares_recepcion = ['Platanal', 'Otro']
     lugar_recepcion_seleccionado = st.selectbox('Lugar de recepción y muestreo', lugares_recepcion)
 
+    if lugar_recepcion_seleccionado == 'Otro':
+        lugar_recepcion_seleccionado = st.text_input('Por favor, ingresa el nombre del lugar de recepción y muestreo')
+
+    st.write(f'Has seleccionado: {lugar_recepcion_seleccionado}')
+
     # Campos para las firmas
-    nombre_entrega = st.text_input('Nombre de quien entrega (Empresa FM)')
-    cargos_entrega = ['Supervisor', 'Operario', 'Otro']
-    cargo_entrega = st.selectbox('Cargo de quien entrega (Empresa FM)', cargos_entrega)
+    nombre_entrega = 'Luis Fernando Ascencio'
+    cargo_entrega = 'Gerente'
 
-    nombre_recibe_formalizacion = st.text_input('Nombre de quien recibe (Formalización)')
-    cargos_recibe_formalizacion = ['Supervisor', 'Operario', 'Otro']
-    cargo_recibe_formalizacion = st.selectbox('Cargo de quien recibe (Formalización)', cargos_recibe_formalizacion)
+    # Display fixed options
+    st.write(f'Nombre de quien entrega (Empresa FM): {nombre_entrega}')
+    st.write(f'Cargo de quien entrega (Empresa FM): {cargo_entrega}')
 
-    nombre_recibe_operaciones = st.text_input('Nombre de quien recibe (Operaciones)')
-    cargos_recibe_operaciones = ['Supervisor', 'Operario', 'Otro']
-    cargo_recibe_operaciones = st.selectbox('Cargo de quien recibe (Operaciones)', cargos_recibe_operaciones)
+    nombres_recibe_formalizacion = [
+        'Jorge Eduardo Cardona Londoño',
+        'Cesar Camilo Gonzalez',
+        'Melissa Rico Rincon'
+    ]
+
+    # Dropdown list for names
+    nombre_recibe_formalizacion = st.selectbox('Nombre de quien recibe (Formalización)', nombres_recibe_formalizacion)
+
+    # Fixed cargo
+    cargo_recibe_formalizacion = 'Servicios Técnicos Formalización'
+
+    # Display selected options
+    st.write(f'Nombre: {nombre_recibe_formalizacion}')
+    st.write(f'Cargo: {cargo_recibe_formalizacion}')
+
+    nombres_recibe_operaciones = [
+        'Jaime Alberto Higuita',
+        'Farley Alexander Giron',
+        'Daniel Usuga',
+        'Sebastian Usuga',
+        'Hector Florez',
+        'Juliana Valle',
+        'Roberto Higuita',
+        'Juliana Usuga',
+        'Luz Nedy Cossio',
+        'Olga Lucia Holguin',
+        'Ana Rosa Moreno',
+        'Aida Cataño'
+    ]
+
+    # Dropdown list for names
+    nombre_recibe_operaciones = st.selectbox('Nombre de quien recibe (Operaciones)', nombres_recibe_operaciones)
+
+    # Fixed cargo
+    cargo_recibe_operaciones = 'Gerente'
+
+    # Display selected options
+    st.write(f'Nombre: {nombre_recibe_operaciones}')
+    st.write(f'Cargo: {cargo_recibe_operaciones}')
 
     # Ruta de la imagen
     imagen_path = "Img/logozcnl.png"
 
     # Mostrar la tabla filtrada con los datos especificados y los nuevos títulos
     if material_seleccionado:
-        df_filtered_material = df_filtered_fecha[df_filtered_fecha['Material'].isin(material_seleccionado)].copy()
+            df_filtered_material = df_filtered_fecha[df_filtered_fecha['Material'].isin(material_seleccionado)].copy()
 
-        # Seleccionar solo las columnas especificadas y renombrarlas
-        df_filtered_material_display = df_filtered_material[['Hora', 'Placa', 'Peso Tara (Kg)', 'Peso Bruto (Kg)', 'Peso Neto (Kg)']].copy()
-        df_filtered_material_display.columns = ['Hora de Pesaje', 'Placa', 'Peso Volqueta Vacia', 'Peso Volqueta Llena', 'Total']
+            # Seleccionar solo las columnas especificadas y renombrarlas, incluyendo 'Fecha'
+            df_filtered_material_display = df_filtered_material[['Fecha', 'Hora', 'Placa', 'Peso Tara (Kg)', 'Peso Bruto (Kg)', 'Peso Neto (Kg)']].copy()
+            df_filtered_material_display.columns = ['Fecha', 'Hora de Pesaje', 'Placa', 'Peso Volqueta Vacia', 'Peso Volqueta Llena', 'Total']
 
-        # No se realiza ninguna conversión en la columna "Hora de Pesaje"
-        # Los datos se mantienen tal como están en el DataFrame original
+            # Formatear la columna 'Fecha' para mostrar solo la fecha (sin la hora)
+            df_filtered_material_display['Fecha'] = df_filtered_material_display['Fecha'].dt.strftime('%d/%m/%Y')
 
-        # Calcular los totales de los tres últimos ítems
-        totales = df_filtered_material_display[['Peso Volqueta Vacia', 'Peso Volqueta Llena', 'Total']].sum().to_frame().T
-        totales['Hora de Pesaje'] = 'Totales'
-        totales['Placa'] = ''
-        df_final = pd.concat([df_filtered_material_display, totales], ignore_index=True)
+            # No se realiza ninguna conversión en la columna "Hora de Pesaje"
+            # Los datos se mantienen tal como están en el DataFrame original
 
-        # Obtener horas de inicio y fin y convertirlas a strings
-        horas_inicio_fin = [df_filtered_material['Hora'].iloc[0].strftime('%H:%M:%S'), df_filtered_material['Hora'].iloc[-1].strftime('%H:%M:%S')]
+            # Calcular los totales de los tres últimos ítems
+            totales = df_filtered_material_display[['Peso Volqueta Vacia', 'Peso Volqueta Llena', 'Total']].sum().to_frame().T
+            totales['Hora de Pesaje'] = 'Totales'
+            totales['Placa'] = ''
+            totales['Fecha'] = ''  # Añadir una columna 'Fecha' vacía para la fila de totales
+            df_final = pd.concat([df_filtered_material_display, totales], ignore_index=True)
 
-        # Mostrar la tabla final
-        st.write(df_final)
+            # Obtener horas de inicio y fin y convertirlas a strings
+            horas_inicio_fin = [df_filtered_material['Hora'].iloc[0].strftime('%H:%M:%S'), df_filtered_material['Hora'].iloc[-1].strftime('%H:%M:%S')]
 
-        # Botón para generar y descargar el PDF
-        if st.button('Generar y Descargar PDF'):
-            buffer = generar_pdf(df_final, fecha_inicio, material_seleccionado, encargado_seleccionado, lugar_recepcion_seleccionado, nombre_entrega, cargo_entrega, nombre_recibe_formalizacion, cargo_recibe_formalizacion, nombre_recibe_operaciones, cargo_recibe_operaciones, imagen_path, horas_inicio_fin)
-            if buffer:
-                # Generar el nombre del archivo con fecha y nombre de la sociedad
-                fecha_str = fecha_inicio.strftime('%Y%m%d')
-                sociedad = material_seleccionado[0].replace(" ", "_") # Reemplazar espacios por guiones bajos
-                file_name = f'registro_pesaje_{fecha_str}_{sociedad}.pdf'
+            # Mostrar la tabla final
+            st.write(df_final)
 
-                st.download_button('Descargar PDF', data=buffer, file_name=file_name, mime='application/pdf')
+            # Botón para generar y descargar el PDF
+            if st.button('Generar y Descargar PDF'):
+                buffer = generar_pdf(df_final, fecha_inicio, material_seleccionado, encargado_seleccionado, lugar_recepcion_seleccionado, nombre_entrega, cargo_entrega, nombre_recibe_formalizacion, cargo_recibe_formalizacion, nombre_recibe_operaciones, cargo_recibe_operaciones, imagen_path, horas_inicio_fin)
+                if buffer:
+                    # Generar el nombre del archivo con fecha y nombre de la sociedad
+                    fecha_str = fecha_inicio.strftime('%Y%m%d')
+                    sociedad = material_seleccionado[0].replace(" ", "_") # Reemplazar espacios por guiones bajos
+                    file_name = f'registro_pesaje_{fecha_str}_{sociedad}.pdf'
+
+                    st.download_button('Descargar PDF', data=buffer, file_name=file_name, mime='application/pdf')
     else:
-        st.write("Por favor, selecciona al menos un material para filtrar los datos.")
+            st.write("Por favor, selecciona al menos un material para filtrar los datos.")
 
 if __name__ == "__main__":
     main()
