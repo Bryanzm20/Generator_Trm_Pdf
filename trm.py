@@ -16,7 +16,7 @@ def extract_gold_prices():
         tree = html.fromstring(response.content)
         dates = []
         gold_pm_prices = []
-        for i in range(1, 60):
+        for i in range(1, 31):
             date_xpath = f'//*[@id="__next"]/main/div[1]/div/div[4]/div/div/div/div/div[2]/div[{i}]/div[1]/text()'
             gold_pm_xpath = f'//*[@id="__next"]/main/div[1]/div/div[4]/div/div/div/div/div[2]/div[{i}]/div[2]/text()[2]'
             date = tree.xpath(date_xpath)[0].strip() if tree.xpath(date_xpath) else 'N/A'
@@ -108,12 +108,10 @@ def main():
         st.subheader("Datos filtrados por rango de fechas y área (Formalizacion)")
         st.dataframe(df_filtrado_rango)
 
-        # Calcular numero_volquetas basado en df_filtrado_rango
         numero_volquetas = len(df_filtrado_rango['Placa'])
 
         st.write(f"Número de volquetas filtradas: {numero_volquetas}")
 
-        # Calcular el resto de valores basados en df_filtrado_rango
         peso_total_humedo = df_filtrado_rango['Peso Neto (Kg)'].sum() / 1000
         total_peso_agua = peso_total_humedo * humedad / 100
         total_toneladas_recibidas = peso_total_humedo - total_peso_agua
@@ -123,12 +121,12 @@ def main():
         onzas_totales = total_toneladas_recibidas * tenor_ozt_recuperacion
 
         precio_lme = None
-        if not df_filtrado_rango.empty:
-            fecha_inicial_filtrado = df_filtrado_rango['Fecha'].min().strftime('%d-%m-%Y')
-            df_precios_oro = pd.read_excel('precios_oro.xlsx', decimal=',')  # Especificar coma decimal
-            precio_lme_fila = df_precios_oro[df_precios_oro['Fecha'] == fecha_inicial_filtrado]
+        if fecha_seleccionada:
+            fecha_seleccionada_str = fecha_seleccionada.strftime('%d-%m-%Y')
+            df_precios_oro = pd.read_excel('precios_oro.xlsx', decimal=',')
+            precio_lme_fila = df_precios_oro[df_precios_oro['Fecha'] == fecha_seleccionada_str]
             if not precio_lme_fila.empty:
-                precio_lme = float(precio_lme_fila['Gold PM'].iloc[0])  # No reemplazar comas aquí
+                precio_lme = float(precio_lme_fila['Gold PM'].iloc[0])
 
         porcentaje_tenor = 0.55 if tenor_gt <= 7.5 else \
             0.51 if 7.5 < tenor_gt <= 15 else \
@@ -138,9 +136,18 @@ def main():
             0.42 if 40 < tenor_gt <= 60 else 0.41
 
         if precio_lme is not None:
-            porcentaje_final = porcentaje_tenor - 0.04 if precio_lme >= (2460.7 * 1.2) else \
-                porcentaje_tenor - 0.01 if (246.7 * 1.1) <= precio_lme < (2460.7 * 1.2) else \
-                porcentaje_tenor if (2460.7 * 0.95) <= precio_lme < (2460.7 * 1.1) else porcentaje_tenor + 0.01
+            limite_superior_120 = 2460.7 * 1.2
+            limite_superior_110 = 2460.7 * 1.1
+            limite_inferior_95 = 2460.7 * 0.95
+
+            if precio_lme >= limite_superior_120:
+                porcentaje_final = porcentaje_tenor - 0.04
+            elif limite_superior_110 <= precio_lme < limite_superior_120:
+                porcentaje_final = porcentaje_tenor - 0.01
+            elif limite_inferior_95 <= precio_lme < limite_superior_110:
+                porcentaje_final = porcentaje_tenor
+            else:
+                porcentaje_final = porcentaje_tenor + 0.01
         else:
             st.error("No se encontró el precio del oro para la fecha seleccionada.")
             porcentaje_final = porcentaje_tenor
