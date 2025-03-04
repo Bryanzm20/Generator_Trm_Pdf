@@ -16,7 +16,7 @@ def extract_gold_prices():
         tree = html.fromstring(response.content)
         dates = []
         gold_pm_prices = []
-        for i in range(1, 31):
+        for i in range(1, 60):
             date_xpath = f'//*[@id="__next"]/main/div[1]/div/div[4]/div/div/div/div/div[2]/div[{i}]/div[1]/text()'
             gold_pm_xpath = f'//*[@id="__next"]/main/div[1]/div/div[4]/div/div/div/div/div[2]/div[{i}]/div[2]/text()[2]'
             date = tree.xpath(date_xpath)[0].strip() if tree.xpath(date_xpath) else 'N/A'
